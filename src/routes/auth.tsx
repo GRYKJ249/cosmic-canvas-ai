@@ -6,6 +6,7 @@ import catAvatar from "@/assets/space-cat-avatar.png";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
+import { logAuthEvent } from "@/lib/security";
 import { useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/auth")({
@@ -36,6 +37,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState<null | "confirm" | "reset">(null);
+  const [otp, setOtp] = useState("");
 
   useEffect(() => {
     if (!loading && session) navigate({ to: "/dashboard", replace: true });
@@ -58,8 +60,9 @@ function AuthPage() {
         setSent("confirm");
         toast.success(t("Check your inbox to confirm your account.", "افحص بريدك لتأكيد حسابك."));
       } else if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        if (data.user) void logAuthEvent(data.user.id, "sign_in", "email");
         toast.success(t("Welcome back, explorer.", "أهلاً بعودتك يا مستكشف."));
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -75,6 +78,41 @@ function AuthPage() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const verifyCode = async () => {
+    const token = otp.replace(/\D/g, "");
+    if (token.length !== 6) {
+      toast.error(t("Enter the 6-digit code.", "أدخل الرمز المكوّن من 6 أرقام."));
+      return;
+    }
+    setBusy(true);
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({ email, token, type: "signup" });
+      if (error) throw error;
+      if (data.user) void logAuthEvent(data.user.id, "sign_up", "email");
+      toast.success(t("Account verified. Welcome aboard.", "تم توثيق الحساب. أهلاً بك على المتن."));
+      navigate({ to: "/dashboard", replace: true });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const resendCode = async () => {
+    setBusy(true);
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: window.location.origin + "/dashboard" },
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(t("A new code is on its way.", "تم إرسال رمز جديد."));
   };
 
   const google = async () => {
