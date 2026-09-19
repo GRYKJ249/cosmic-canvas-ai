@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, Code2, Cpu, ImageIcon, Loader2, LogOut, Save, Sparkles } from "lucide-react";
+import { BadgeCheck, Code2, Cpu, ImageIcon, Loader2, LogOut, Save, ShieldCheck, Sparkles } from "lucide-react";
 import catAvatar from "@/assets/space-cat-avatar.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -174,6 +174,13 @@ function Dashboard() {
             <p className="mt-3 font-semibold">{t("Code Workspace", "مساحة الأكواد")}</p>
             <p className="text-sm text-muted-foreground">
               {t("Cloud IDE with a live terminal and AI refactoring.", "بيئة برمجة سحابية بطرفية حيّة ومساعد ذكي للتحسين.")}
+            </p>
+          </Link>
+          <Link to="/security" className="glass rounded-2xl p-6 transition hover:border-primary/50">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+            <p className="mt-3 font-semibold">{t("Security center", "مركز الأمان")}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("Sign-in history, password rotation and personal API keys.", "سجل الدخول، تغيير كلمة المرور، ومفاتيح API الشخصية.")}
             </p>
           </Link>
         </div>
