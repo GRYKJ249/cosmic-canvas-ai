@@ -7,13 +7,16 @@ import {
   Copy,
   Download,
   Expand,
+  Globe,
   ImageIcon,
   Loader2,
+  Lock,
   MessageSquare,
   Orbit,
   RefreshCw,
   Sparkles,
   Trash2,
+  Upload,
   WandSparkles,
   X,
 } from "lucide-react";
@@ -59,6 +62,7 @@ type GenerationRow = {
   style: string | null;
   image_path: string;
   created_at: string;
+  is_public?: boolean | null;
 };
 type GalleryItem = GenerationRow & { signedUrl: string | null };
 type Result = {
@@ -113,6 +117,15 @@ function StudioPage() {
   const [filter, setFilter] = useState<string>("All");
   const [lightbox, setLightbox] = useState<{ src: string; prompt: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<GalleryItem | null>(null);
+  const [reference, setReference] = useState<{ file: File; preview: string } | null>(null);
+
+  const sign = async (rows: GenerationRow[]): Promise<GalleryItem[]> =>
+    Promise.all(
+      rows.map(async (row) => {
+        const { data: signed } = await supabase.storage.from("generations").createSignedUrl(row.image_path, 60 * 60);
+        return { ...row, signedUrl: signed?.signedUrl ?? null };
+      }),
+    );
 
   const galleryQuery = useQuery({
     queryKey: ["generated-images", user?.id],
@@ -121,18 +134,51 @@ function StudioPage() {
       if (!user) return [];
       const { data, error } = await supabase
         .from("generated_images")
-        .select("id, prompt, style, image_path, created_at")
+        .select("id, prompt, style, image_path, created_at, is_public")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return Promise.all(
-        (data ?? []).map(async (row) => {
-          const { data: signed } = await supabase.storage.from("generations").createSignedUrl(row.image_path, 60 * 60);
-          return { ...row, signedUrl: signed?.signedUrl ?? null };
-        }),
-      );
+      return sign(data ?? []);
     },
   });
+
+  const communityQuery = useQuery({
+    queryKey: ["community-images"],
+    enabled: !!user,
+    queryFn: async (): Promise<GalleryItem[]> => {
+      const { data, error } = await supabase
+        .from("generated_images")
+        .select("id, prompt, style, image_path, created_at, is_public")
+        .eq("is_public", true)
+        .order("created_at", { ascending: false })
+        .limit(24);
+      if (error) throw error;
+      return sign(data ?? []);
+    },
+  });
+
+  const toggleShare = async (item: GalleryItem) => {
+    const next = !item.is_public;
+    const { error } = await supabase.from("generated_images").update({ is_public: next }).eq("id", item.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await queryClient.invalidateQueries({ queryKey: ["generated-images", user?.id] });
+    await queryClient.invalidateQueries({ queryKey: ["community-images"] });
+    toast.success(next ? t("Shared to the community gallery.", "تمت المشاركة في معرض المجتمع.") : t("Made private again.", "أصبحت خاصة مرة أخرى."));
+  };
+
+  const pickReference = (file: File | undefined) => {
+    if (!file) return;
+    if (reference) URL.revokeObjectURL(reference.preview);
+    setReference({ file, preview: URL.createObjectURL(file) });
+  };
+
+  const clearReference = () => {
+    if (reference) URL.revokeObjectURL(reference.preview);
+    setReference(null);
+  };
 
   const filteredGallery = useMemo(
     () => (galleryQuery.data ?? []).filter((item) => filter === "All" || item.style === filter),
