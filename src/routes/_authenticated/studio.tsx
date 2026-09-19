@@ -62,6 +62,7 @@ type GenerationRow = {
   style: string | null;
   image_path: string;
   created_at: string;
+  is_public?: boolean | null;
 };
 type GalleryItem = GenerationRow & { signedUrl: string | null };
 type Result = {
