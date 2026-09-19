@@ -167,16 +167,48 @@ function AuthPage() {
             <Mail className="mx-auto mb-3 h-6 w-6 text-primary" />
             {sent === "confirm"
               ? t(
-                  "We sent a confirmation link to your email. Open it to activate your account.",
-                  "أرسلنا رابط تأكيد إلى بريدك. افتحه لتنشيط حسابك.",
+                  "We emailed you a 6-digit code. Enter it below, or open the confirmation link in the same email.",
+                  "أرسلنا إلى بريدك رمزاً من 6 أرقام. أدخله بالأسفل، أو افتح رابط التأكيد في نفس الرسالة.",
                 )
               : t(
                   "We sent a password reset link to your email.",
                   "أرسلنا رابط إعادة تعيين كلمة المرور إلى بريدك.",
                 )}
+
+            {sent === "confirm" && (
+              <div className="mt-5">
+                <input
+                  value={otp}
+                  onChange={(event) => setOtp(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  aria-label={t("Verification code", "رمز التحقق")}
+                  placeholder="••••••"
+                  className="w-full rounded-xl border border-glass-border bg-background/40 px-3.5 py-3 text-center font-mono text-2xl tracking-[0.6em] outline-none focus:border-primary/60"
+                />
+                <button
+                  type="button"
+                  onClick={() => void verifyCode()}
+                  disabled={busy || otp.length !== 6}
+                  className="btn-hero mt-4 w-full justify-center disabled:opacity-60"
+                >
+                  {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {t("Verify and continue", "تحقّق وتابع")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void resendCode()}
+                  disabled={busy}
+                  className="mt-3 block w-full text-xs text-muted-foreground hover:text-foreground"
+                >
+                  {t("Send a new code", "إرسال رمز جديد")}
+                </button>
+              </div>
+            )}
+
             <button
               type="button"
-              onClick={() => { setSent(null); setMode("signin"); }}
+              onClick={() => { setSent(null); setOtp(""); setMode("signin"); }}
               className="mt-4 block w-full text-xs text-primary underline-offset-4 hover:underline"
             >
               {t("Back to sign in", "رجوع لتسجيل الدخول")}
