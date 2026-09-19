@@ -19,6 +19,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiCodeAssistRouteImport } from './routes/api/code-assist'
+import { Route as ApiEditImageRouteImport } from './routes/api/edit-image'
 import { Route as ApiGenerateImageRouteImport } from './routes/api/generate-image'
 import { Route as AuthenticatedChatIndexRouteImport } from './routes/_authenticated/chat.index'
 import { Route as AuthenticatedChatThreadIdRouteImport } from './routes/_authenticated/chat.$threadId'
@@ -72,6 +73,11 @@ const ApiCodeAssistRoute = ApiCodeAssistRouteImport.update({
   path: '/api/code-assist',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiEditImageRoute = ApiEditImageRouteImport.update({
+  id: '/api/edit-image',
+  path: '/api/edit-image',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGenerateImageRoute = ApiGenerateImageRouteImport.update({
   id: '/api/generate-image',
   path: '/api/generate-image',
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/studio': typeof AuthenticatedStudioRoute
   '/api/chat': typeof ApiChatRoute
   '/api/code-assist': typeof ApiCodeAssistRoute
+  '/api/edit-image': typeof ApiEditImageRoute
   '/api/generate-image': typeof ApiGenerateImageRoute
   '/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
   '/chat/': typeof AuthenticatedChatIndexRoute
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/studio': typeof AuthenticatedStudioRoute
   '/api/chat': typeof ApiChatRoute
   '/api/code-assist': typeof ApiCodeAssistRoute
+  '/api/edit-image': typeof ApiEditImageRoute
   '/api/generate-image': typeof ApiGenerateImageRoute
   '/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
   '/chat': typeof AuthenticatedChatIndexRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/_authenticated/studio': typeof AuthenticatedStudioRoute
   '/api/chat': typeof ApiChatRoute
   '/api/code-assist': typeof ApiCodeAssistRoute
+  '/api/edit-image': typeof ApiEditImageRoute
   '/api/generate-image': typeof ApiGenerateImageRoute
   '/_authenticated/chat/$threadId': typeof AuthenticatedChatThreadIdRoute
   '/_authenticated/chat/': typeof AuthenticatedChatIndexRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/api/chat'
     | '/api/code-assist'
+    | '/api/edit-image'
     | '/api/generate-image'
     | '/chat/$threadId'
     | '/chat/'
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/api/chat'
     | '/api/code-assist'
+    | '/api/edit-image'
     | '/api/generate-image'
     | '/chat/$threadId'
     | '/chat'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/_authenticated/studio'
     | '/api/chat'
     | '/api/code-assist'
+    | '/api/edit-image'
     | '/api/generate-image'
     | '/_authenticated/chat/$threadId'
     | '/_authenticated/chat/'
@@ -184,6 +196,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiCodeAssistRoute: typeof ApiCodeAssistRoute
+  ApiEditImageRoute: typeof ApiEditImageRoute
   ApiGenerateImageRoute: typeof ApiGenerateImageRoute
 }
 
@@ -259,6 +272,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCodeAssistRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/edit-image': {
+      id: '/api/edit-image'
+      path: '/api/edit-image'
+      fullPath: '/api/edit-image'
+      preLoaderRoute: typeof ApiEditImageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/generate-image': {
       id: '/api/generate-image'
       path: '/api/generate-image'
@@ -320,6 +340,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ApiChatRoute: ApiChatRoute,
   ApiCodeAssistRoute: ApiCodeAssistRoute,
+  ApiEditImageRoute: ApiEditImageRoute,
   ApiGenerateImageRoute: ApiGenerateImageRoute,
 }
 export const routeTree = rootRouteImport
